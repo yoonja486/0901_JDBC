@@ -1,0 +1,12 @@
+package com.kh.statement.controller;
+
+
+/**
+ * VIEW에서 넘어온 요청을 처리해주는 클래스입니다.
+ * 1. 메소드로 전달된 데이터를 가공처리 한 뒤 DAO로 전달합니다.
+ * 2. DAO로부터 반환받은 결과에 따라서 VIEW로 응답결과를 반환 
+ */
+public class MemberController {
+
+	
+}

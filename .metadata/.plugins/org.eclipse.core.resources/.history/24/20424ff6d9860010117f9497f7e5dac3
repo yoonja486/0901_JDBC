@@ -1,0 +1,13 @@
+package com.kh.statement.model.dao;
+
+public class MemberDao {
+	/*
+	 * JDBC용 인터페이스
+	 * 
+	 * - Connection
+	 * - Statement
+	 * - ResultSet
+	 * 
+	 */
+	 
+}
