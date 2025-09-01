@@ -49,7 +49,27 @@ public class MemberController {
 		return members;
 	}
 	
+	/**
+	 * 사용자에게 입력받은 아이디 값을 이용해서 검색요청을 처리해주는 메소드
+	 * 
+	 * @param userId : 사용자가 입력한 검색 하고자 하는 문자열
+	 * 
+	 */
+	public Member findById(String userId) {
+		
+		// 1. 데이터 가공 => 할 게 없어서 넘어감~~
+		
+		// 2. 요청 처리 => DAO 객체 생성 후 메소드 호출
+		Member member = new MemberDao().findById(userId);
+		
+		// 3. 요청 처리 후 결과값을 View 에게 반환
+		return member;
+	}
 	
-	
-	
+	public List<Member> findByKeyword(String keyword) {
+		// 결과값이 나중에 어떻게 돌아올까?
+		// SELECT -> ResultSet -> Member -> List<Member>
+		List<Member> members = new MemberDao().findByKeyword(keyword);
+		return members;
+	}
 }

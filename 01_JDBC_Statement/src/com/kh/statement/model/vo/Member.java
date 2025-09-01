@@ -69,6 +69,7 @@ public class Member {
 		this.userPwd = userPwd;
 	}
 
+
 	public String getUserName() {
 		return userName;
 	}
@@ -112,6 +113,11 @@ public class Member {
 				&& userNo == other.userNo && Objects.equals(userPwd, other.userPwd);
 	}
     
+	@Override
+	public String toString() {
+		return "Member [userNo=" + userNo + ", userId=" + userId + ", userPwd=" + userPwd + ", userName=" + userName
+				+ ", email=" + email + ", enrollDate=" + enrollDate + "]";
+	}
     
     
 }

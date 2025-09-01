@@ -271,7 +271,159 @@ public class MemberDao {
 		return members;
 	}
 	
+	public Member findById(String userId) {
+		Member member = null;
+		// 0) 필요한 변수들 먼저 선언
+		// JDBC 관련 인터페이스
+		// Connection, Statement, ResultSet(이것만 고집할 필요는 없음)
+		// Connection conn = null;
+		// Statement stmt = null;
+		// ResultSet rset = null;
+		
+		// 실행할 SQL문(완성형태로)
+		/*
+		 * SELECT
+		 *        USERNO
+		 *      , USERID
+		 *      , USERPWD
+		 *      , USERNAME
+		 *      , EMAIL
+		 *      , ENROLLDATE
+		 *   FROM
+		 *        MEMBER
+		 *  WHERE
+		 *        USERID = '사용자가 입력한 ID값'
+		 */        
+		
+		String sql = """
+				         SELECT
+				                USERNO
+				              , USERID
+				              , USERPWD
+				              , USERNAME
+				              , EMAIL
+				              , ENROLLDATE
+				           FROM
+				                MEMBER
+				          WHERE
+				                USERID = 
+			      	 """;
+		sql += "'" + userId + "'";
+		
+		try {
+			// 1) JDBC Driver등록
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+		
+			// 2) Connection 객체 생성
+			// 3) Statement 객체 생성
+			// 4) SQL실행
+			// 5) ResultSet 받아오기
+			try(Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@115.90.212.20:10000:XE","HGJ20","HGJ201234");
+				Statement stmt = conn.createStatement();
+				ResultSet rset = stmt.executeQuery(sql)) {
+			
+			// 6) 조회결과가 담긴 ResultSet 객체에서 조회결과가 존재한다면 VO객체의 필드에 옮겨담기
+			// ID가지고 검색(UNIQUE) 한 행만 조회
+				if(rset.next()) {
+					member = new Member(rset.getInt("USERNO")
+									  , rset.getString("USERID")
+									  , rset.getString("USERPWD")
+									  , rset.getString("USERNAME")
+									  , rset.getString("EMAIL")
+									  , rset.getDate("ENROLLDATE"));
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		} catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		// 8) 결과값 반환
+		return member;
+	}
 	
+	public List<Member> findByKeyword(String keyword){
+		// 0) 필요한 변수들
+		List<Member> members = new ArrayList();
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rset = null;
+		
+		// 실행할 SQL문
+		/*
+		 * SELECT
+		 *        USERNO
+		 *      , USERID
+		 *      , USERPWD
+		 *      , USERNAME
+		 *      , EMAIL
+		 *      , ENROLLDATE
+		 *   FROM
+		 *        MEMBER
+		 *  WHERE
+		 *        USERNAME LIKE '%사용자가입력한값%'
+		 *  ORDER
+		 *     BY
+		 *        ENROLLDATE DESC
+		 */
+		
+		String sql = "SELECT "
+				          + "USERNO"
+				         + ", USERID"
+				         + ", USERPWD"
+				         + ", USERNAME"
+				         + ", EMAIL"
+				         + ", ENROLLDATE "
+				      + "FROM "
+				           + "MEMBER "
+				      + "WHERE "
+				           + "USERNAME LIKE '%" + keyword + "%' "
+				      + "ORDER "
+				         + "BY "
+				         	+ "ENROLLDATE DESC";
+		
+		try {
+			// 1) JDBC Driver 등록
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+		
+			// 2) Connection 객체 생성
+			conn = DriverManager.getConnection("jdbc:oracle:thin:@115.90.212.20:10000:XE","HGJ20","HGJ201234");
+			
+			// 3) Statement 객체 생성
+			stmt = conn.createStatement();
+			
+			// 4, 5) SQL(SELECT)문을 실행 후 결과 받아오기
+			rset = stmt.executeQuery(sql);
+			
+			// 6) ResultSet 객체에서 각 행에 접근하면서 조회 결과가 있다면 컬럼의 값을 뽑아서 VO객체에
+			// 	  필드에 대입한 뒤 List의 요소로 추가함
+			while(rset.next()) {
+				
+				members.add(new Member(rset.getInt("USERNO")
+									  ,rset.getString("USERID")
+									  ,rset.getString("USERPWD")
+									  ,rset.getString("USERNAME")
+									  ,rset.getString("EMAIL")
+									  ,rset.getDate("ENROLLDATE")));
+			}
+			
+		} catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		} finally {
+				// 7) 자원반납 => 생성된 순서의 역순으로 close()를 호출
+			try {
+				rset.close();
+				stmt.close();
+				conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		// 8) 결과반환
+		return members;
+	}
 	
 	
 }
