@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +12,10 @@ import com.kh.statement.model.dto.PasswordDTO;
 import com.kh.statement.model.vo.Member;
 
 public class MemberDao {
+	private final String DRIVER = "oracle.jdbc.driver.OracleDriver";
+	private final String URL = "jdbc:oracle:thin:@115.90.212.20:10000:XE";
+	private final String USERNAME = "HGJ20";
+	private final String PASSWORD = "HGJ201234";
 	
 	/*
 	 * DAO(Date Access Object)
@@ -75,8 +78,9 @@ public class MemberDao {
 	 * 		INSERT / UPDATE / DELETE : 트랜잭션 처리
 	 * 7) 사용이 다 끝난 JDBC용 객체들을 생성의 역순으로 자원 반납 -> close()
 	 * 8) 결과 반환
-	 *    SELECT -> 6에서 만든거
-	 *    INSERT / UPDATE / DELETE -> 처리된 행의 개수
+	 *    SELECT -> 6에서 만든거 : int로 결과를 돌려줄수 없다. 값을 조회하는 용도
+	 *    INSERT / UPDATE / DELETE -> 처리된 행의 개수 : 값을 추가, 변경, 삭제하면 결과 값이 행의 개수 정수로 나타내기 때문에
+	 *    											 자료형 int로 결과를 받아올 수 있음.
 	 */
 
 	public int save(Member member) {
@@ -107,7 +111,7 @@ public class MemberDao {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			
 			// 2) Connection 객체 생성(DB와 연결하겠다)
-			conn = DriverManager.getConnection("jdbc:oracle:thin:@115.90.212.20:10000:XE","HGJ20","HGJ201234");
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
 			conn.setAutoCommit(false);
 			
 			// 3_1) PreparedStatement객체 생성(SQL문을 미리 전달해야함!)
@@ -122,6 +126,10 @@ public class MemberDao {
 			pstmt.setString(2, member.getUserPwd());
 			pstmt.setString(3, member.getUserName());
 			pstmt.setString(4, member.getEmail());
+			// 오류 나올 경우 ↓
+			// 위치홀더를 올바르게 다 채우지 못했다.
+			// 자료형이 컬럼의 자료형과 맞지않는 값을 Bind
+			
 			
 			// pstmt.setString(홀더순번, 값)
 			// => '값' (양옆에 홑따옴표를 감싼 상태로 알아서 Bind)
@@ -161,23 +169,384 @@ public class MemberDao {
 		return result;
 	}
 		
+	public List<Member> findAll(){
+		
+		// 0) 필요한 변수 세팅
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		// 멤버 객체만 담을 수 있는 리스트가 필요함
+		List<Member> members = new ArrayList();
+		
+		try {
+			// 1) JDBC Driver 등록
+			Class.forName(DRIVER);
+			
+			// 2) Connection 생성
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			
+			// 3) ParedStatement 객체 생성
+			pstmt = conn.prepareStatement(
+										  """
+					                        SELECT
+					                               USERNO
+					                             , USERID
+					                             , USERPWD
+					                             , USERNAME
+					                             , EMAIL
+					                             , ENROLLDATE
+					                          FROM
+					                               MEMBER
+					                         ORDER
+					                            BY
+					                               ENROLLDATE DESC
+										   """
+									    );
+			// 4, 5) SQL(SELECT)문을 실행 후 결과(ResultSet)받기
+			rset = pstmt.executeQuery();
+			
+			// 6) 결과값 매핑
+			// 조회결과가 존재하는가를 먼저 판단한 뒤 존재할 경우 한 행씩 접근해서 컬럼의 값을 뽑아서 VO필드에다가 매핑
+			while(rset.next()) {
+				Member member = new Member();
+				member.setUserNo(rset.getInt("USERNO"));
+				member.setUserId(rset.getString("USERID"));
+				member.setUserPwd(rset.getString("USERPWD"));
+				member.setUserName(rset.getString("USERNAME"));
+				member.setEmail(rset.getString("EMAIL"));
+				member.setEnrollDate(rset.getDate("ENROLLDATE"));
+				
+				members.add(member);
+			}
+		} catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		} finally {
+			// 7) 사용이 모두 끝난 JDBC용 객체 반납(생성된 순서의 역순으로)
+			try {
+				if(rset != null) {
+					rset.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		// 8) 컨트롤러에게 결과 반환
+		return members;
+	}
+	/*
+	 * PreparedStatement가 Statement보다 좋음
+	 * 
+	 * 1. 구문분석 및 컴파일 최적화
+	 * 	stmt.executeUpdate(sql);
+	 * 	pstmt.executeUpdate();
+	 * 
+	 * Statement는 매 번 SQL문을 파싱하고 실행하지만
+	 * PreparedStatement는 SQL쿼리를 최초 1회만 파싱하고 실행 계획을 캐싱(메모리에 올림)
+	 * 
+	 * 재사용적인 측면에서 훨씬 효율적임
+	 * 
+	 * 2. DB서버에 대한 트래픽 감소
+	 * 
+	 * 쿼리 자체는 한 번만 전송하고 이후에는 바인딩할 값만 전송하기 때문에 효율적!
+	 * 
+	 * 동일 쿼리를 반복 실행할 때, 높은 트래픽이 몰리는 애플리케이션일 때 더욱 더 효율적이다.
+	 * 
+	 * DB작업 -> 계획 세울 때 리소스를 많이 잡아먹음
+	 * 
+	 * 3. SQL Injection 방지
+	 * 
+	 * SELECT
+	 * 		  EMAIL
+	 *   FROM
+	 *        MEMBER
+	 *  WHERE
+	 *        USERID = '" + m.getUserId() + "'"
+	 *    AND 
+	 *        USERPWD = '" + m.getUserPwd() + "'"
+	 * 
+	 * 사용자의 입력값 == ' OR '1'='1';
+	 * 
+	 * Statement는 이걸 막을 수가 없음
+	 * 
+	 * PreparedStatement는 인젝션 방지가 됨 ==> 보안적인 측면에도 훨씬 좋음
+	 */
+
+	public Member findById(String userId) {
+		Member member = null;
+		// 0) 필요한 번수들 선언
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		
+		String sql = """
+				         SELECT
+				                USERNO
+				              , USERID
+				              , USERPWD
+				              , USERNAME
+				              , EMAIL
+				              , ENROLLDATE
+				           FROM
+				                MEMBER
+				          WHERE
+				                USERID = ?
+					""";
+		
+		try {
+			
+			// 1) JDBCDriver등록
+			Class.forName(DRIVER);
+			
+			// 2) Connection 객체 생성
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+
+			// 3_1) PreparedStatement 객체 생성
+			pstmt = conn.prepareStatement(sql);
+			
+			// 3_2) 값 채우기
+			pstmt.setString(1, userId);
+
+			// 4, 5) SQL문 실행
+			rset = pstmt.executeQuery();
+			
+			// 6) rset에 값 있나 없나 판단 후 있다 VO필드에 매핑
+			if(rset.next()) {
+				member = new Member(rset.getInt("USERNO")
+								   ,rset.getString("USERID")
+								   ,rset.getString("USERPWD")
+								   ,rset.getString("USERNAME")
+								   ,rset.getString("EMAIL")
+								   ,rset.getDate("ENROLLDATE"));
+			}
+		} catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		} finally {
+			// 7) JDBC< 다 썼다~~
+			try {
+				if(rset != null) {
+					rset.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		// 8) 결과 반환
+		return member;
+	}
 	
+	// 이름 키워드로 검색
+	public List<Member> findByKeyword(String keyword) {
+		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		List<Member> members = new ArrayList();
+		
+		// 실행할 SQL문
+		String sql = """
+				       SELECT
+				              USERNO
+				            , USERID
+				            , USERPWD
+				            , USERNAME
+				            , EMAIL
+				            , ENROLLDATE
+				         FROM
+				              MEMBER
+				        WHERE
+				              USERNAME LIKE '%'||?||'%'
+				        ORDER
+				           BY
+				              ENROLLDATE DESC
+					""";
+		
+		try {
+			Class.forName(DRIVER);
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			pstmt = conn.prepareStatement(sql);
+			// pstmt.setString(1, "%"+ keyword + "%");
+			pstmt.setString(1, keyword);
+			rset = pstmt.executeQuery();
+			while(rset.next()) {
+				members.add(new Member(rset.getInt("USERNO")
+									  ,rset.getString("USERID")
+									  ,rset.getString("USERPWD")
+									  ,rset.getString("USERNAME")
+									  ,rset.getString("EMAIL")
+									  ,rset.getDate("ENROLLDATE")));
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rset != null) {
+				rset.close();
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return members;
+	}
 
+	public int update(PasswordDTO pd) {
+		// update 할 일 : 전달받은 값을 가지고 값이 존재하는 행을 찾아서 갱신해줌
+		// 얘가 맡은 일 : SQL문 실행하고 결과 받아오기
+		
+		// 0)
+		int result = 0;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = """
+				        UPDATE
+				               MEMBER
+				           SET
+				               USERPWD = ?
+				         WHERE
+				               USERID = ?
+				           AND
+				               USERPWD = ?
+					""";
+		
+		try {
+			// 1)
+			Class.forName(DRIVER);
+			
+			// 2)
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			conn.setAutoCommit(false);
+			
+			// 3)
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, pd.getNewPassword());
+			pstmt.setString(2, pd.getUserId());
+			pstmt.setString(3, pd.getUserPwd());
+			
+			// 4, 5)
+			result = pstmt.executeUpdate();
+			
+			// 6)
+			if(result > 0) {
+				conn.commit();
+			}
+		
+		} catch(ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		} finally {
+			// 7)
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		// 8)
+		return result;
+	}
+
+	public int delete(Member member) {
+		int result = 0;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		String sql = """
+				        DELETE
+				          FROM
+				               MEMBER
+				         WHERE
+				               USERID = ?
+				           AND
+				               USERPWD = ?
+					""";
+		
+		try {
+			Class.forName(DRIVER);
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, member.getUserId());
+			pstmt.setString(2, member.getUserPwd());
+			result = pstmt.executeUpdate();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return result;
+	}
+	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -54,8 +54,6 @@ public class MusicView {
 		mv.setGenre(genre);
 		mc.musicInsert(mv);
 		
-		
-		
 	}
 	
 	

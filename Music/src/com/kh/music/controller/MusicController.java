@@ -7,7 +7,6 @@ public class MusicController {
 
 	private MusicDao mDao = new MusicDao();
 	
-	
 	public void musicInsert(MusicVo mv) {
 		
 	

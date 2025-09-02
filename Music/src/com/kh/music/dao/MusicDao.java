@@ -1,12 +1,78 @@
 package com.kh.music.dao;
 
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import com.kh.music.vo.MusicVo;
 
 public class MusicDao {
+	private final String DRIVER = "oracle.jdbc.driver.OracleDriver";
+	private final String URL = "jdbc:oracle:thin:@115.90.212.20:10000:XE";
+	private final String USERNAME = "HGJ20";
+	private final String PASSWORD = "HGJ201234";
 
-	// 0) 필요한 변수를 먼저 선언 및 null값으로 초기화
-	Connection conn = null;	// 접속할 DB서버와의 연결정보를 담는 객체
-	Statement stmt = null;	// SQL문 실행 후 결과를 받기 위한 객체
-	int result = 0;			// DML 수행 후 결과를 받기 위한 변수
+	public int musicInsetr(MusicVo musicVo) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String sql = """
+					     INSERT
+					       INTO
+					            MUSIC
+					     VALUES
+					            (
+					            ?
+					          , ?
+					          , ?
+					            )
+						""";
+		
+		try {
+			Class.forName(DRIVER);
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			conn.setAutoCommit(false);
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, musicVo.getTitle());
+			pstmt.setString(2, musicVo.getArtists());
+			pstmt.setString(3, musicVo.getGenre());
+			
+			result = pstmt.executeUpdate();
+			
+			if(result > 0) {
+				conn.commit();
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) {
+					pstmt.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if(conn != null) {
+					conn.close();
+				}
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	
+	
+	
+
 }
