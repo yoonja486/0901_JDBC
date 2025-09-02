@@ -3,7 +3,10 @@ package com.kh.music.dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.kh.music.vo.MusicVo;
 
@@ -13,7 +16,7 @@ public class MusicDao {
 	private final String USERNAME = "HGJ20";
 	private final String PASSWORD = "HGJ201234";
 
-	public int musicInsetr(MusicVo musicVo) {
+	public int musicInsert(MusicVo musicVo) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		int result = 0;
@@ -21,7 +24,7 @@ public class MusicDao {
 		String sql = """
 					     INSERT
 					       INTO
-					            MUSIC
+					            TB_MUSIC(
 					     VALUES
 					            (
 					            ?
@@ -71,7 +74,51 @@ public class MusicDao {
 		return result;
 	}
 	
-	
+	public List<MusicVo> titleSearch(String title){
+		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		List<MusicVo> mvos = new ArrayList();
+		
+		String sql = """
+				        SELECT
+				               TITLE
+				             , ARTISTS
+				             , GENRE
+				             , RELEASEDATE
+				             , SONGWRITER
+				             , LYRICIST
+				             , ENTERTAINMENT
+				          FROM
+				               MUSIC
+				         WHERE
+				               TITLE LIKE '%'||?||'%'
+					""";
+		
+		try {
+			Class.forName(DRIVER);
+			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			rset = pstmt.executeQuery();
+			
+			
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		return mvos;
+	}
 	
 	
 
