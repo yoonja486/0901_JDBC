@@ -15,6 +15,14 @@ public class MusicVo {
 		super();
 	}
 
+    public MusicVo(int musicId, String title, String artists, String genre) {
+		super();
+		this.musicId = musicId;
+		this.title = title;
+		this.artists = artists;
+		this.genre = genre;
+	}
+    
 	public MusicVo(int musicId, String title, String artists, String genre, String releaseDate, String songwriter,
 			String lyricist, String entertainment) {
 		super();

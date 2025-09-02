@@ -3,6 +3,7 @@ package com.kh.music.view;
 import java.util.Scanner;
 
 import com.kh.music.controller.MusicController;
+import com.kh.music.vo.MusicVo;
 
 public class MusicView {
 
@@ -25,18 +26,42 @@ public class MusicView {
 			sc.nextLine();
 			
 		switch(i) {
-		case 1 : break;
+		case 1 : musicInsert(); break;
 		case 2 : break;
 		case 3 : break;
 		case 4 : break;
 		case 0 : System.out.println("프로그램을 종료합니다."); return;
 		default : System.out.println("번호를 잘 못 선택하셨습니다.");
+			}
 		}
+	}
+	
+	public void musicInsert() {
+		
+		System.out.println();
+		System.out.println("🎹 뮤직 추가 서비스입니다. 🎹");
+		System.out.println("타이틀명을 적어주세요 > ");
+		String title = sc.nextLine();
+		System.out.println("아티스트를 적어주세요 > ");
+		String artists = sc.nextLine();
+		System.out.println("장르를 적어주세요 > ");
+		String genre = sc.nextLine();
+		System.out.println(title + " / " + artists + " / " + genre + " 뮤직이 추가 되었습니다.");
+
+		MusicVo mv = new MusicVo();
+		mv.setTitle(title);
+		mv.setArtists(artists);
+		mv.setGenre(genre);
+		mc.musicInsert(mv);
 		
 		
-		
-		}
 		
 	}
+	
+	
+	
+	
+	
+	
 	
 }
