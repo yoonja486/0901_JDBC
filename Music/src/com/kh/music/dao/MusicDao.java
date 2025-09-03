@@ -33,13 +33,14 @@ public class MusicDao {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
+		// (SELECT count(*) + 1 FROM TB_MUSIC)
 		String sql = """
 			     INSERT
 			       INTO
 			            TB_MUSIC(MUSIC_ID, TITLE, ARTISTS, GENRE, RELEASE_DATE, SONGWRITER, LYRICIST)
 			     VALUES
 			            (
-			            (SELECT count(*) + 1 FROM TB_MUSIC)
+			            SEQ_USERNO.NEXTVAL
 			          , ?
 			          , ?
 			          , ? 

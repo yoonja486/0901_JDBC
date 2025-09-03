@@ -154,9 +154,115 @@ public class MemberDao {
 			JDBCTemplate.close(pstmt);
 		}
 		return member;
-		
 	}
 	
+	public List<Member> findByKeyword(Connection conn, String keyword){
+		
+		List<Member> members = new ArrayList();
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		String sql = """
+				         SELECT
+				                USERNO
+				              , USERID
+				              , USERPWD
+				              , USERNAME
+				              , EMAIL
+				              , ENROLLDATE
+				           FROM
+				                MEMBER
+				          WHERE
+				                USERNAME LIKE '%'||?||'%'
+					""";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, keyword);
+			rset = pstmt.executeQuery();
+			
+			while(rset.next()) {
+				members.add(new Member(rset.getInt("USERNO")
+									  ,rset.getString("USERID")
+									  ,rset.getString("USERPWD")
+									  ,rset.getString("USERNAME")
+									  ,rset.getString("EMAIL")
+									  ,rset.getDate("ENROLLDATE")));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JDBCTemplate.close(rset);
+			JDBCTemplate.close(pstmt);
+		}
+		return members;
+	}
+	
+	public int update(Connection conn, PasswordDTO pd) {
+		
+		int result = 0;
+		PreparedStatement pstmt = null;
+		
+		String sql = """
+				         UPDATE
+				                MEMBER
+				            SET
+				                USERPWD = ?
+				          WHERE
+				                USERID = ?
+				            AND
+				                USERPWD = ?
+					""";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, pd.getNewPassword());
+			pstmt.setString(2, pd.getUserId());
+			pstmt.setString(3, pd.getUserPwd());
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JDBCTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public int delete(Connection conn, Member member) {
+		// 0)
+		int result = 0;
+		PreparedStatement pstmt = null;
+		String sql = """
+				 	     DELETE
+				 	       FROM
+				 	            MEMBER
+				 	      WHERE
+				 	            USERID = ?
+				 	        AND
+				 	            USERPWD = ?
+					""";
+		// 1 ~ 2) 앞에서 다했음
+		
+		try {
+			// 3_1)
+			pstmt = conn.prepareStatement(sql);
+			// 3_2)
+			pstmt.setString(1, member.getUserId());
+			pstmt.setString(2, member.getUserPwd());
+			// 4, 5)
+			result = pstmt.executeUpdate();
+			// 6) Service로 돌아가서 진행
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			// 7)
+			JDBCTemplate.close(pstmt);
+		}
+		// 8)
+		return result;
+		
+		
+	}
 	
 	
 	

@@ -42,7 +42,7 @@ public class MemberController {
 	
 	public List<Member> findByKeyword(String keyword) {
 
-		List<Member> members = new MemberDao().findByKeyword(keyword);
+		List<Member> members = new MemberService().findByKeyword(keyword);
 		
 		return members;
 	}
@@ -51,7 +51,7 @@ public class MemberController {
 		
 		PasswordDTO pd = new PasswordDTO(userId, userPwd, newPassword);
 		
-		int result = new MemberDao().update(pd);
+		int result = new MemberService().update(pd);
 		
 		return result;
 	}
@@ -62,7 +62,7 @@ public class MemberController {
 		member.setUserId(userId);
 		member.setUserPwd(userPwd);
 		
-		int result = new MemberDao().delete(member);
+		int result = new MemberService().delete(member);
 
 		return result;
 		

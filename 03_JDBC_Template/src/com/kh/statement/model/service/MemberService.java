@@ -3,8 +3,11 @@ package com.kh.statement.model.service;
 import java.sql.Connection;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import static com.kh.common.JDBCTemplate.*;
 import com.kh.statement.model.dao.MemberDao;
+import com.kh.statement.model.dto.PasswordDTO;
 import com.kh.statement.model.vo.Member;
 
 // 클라이언트의 요청 처리
@@ -89,6 +92,63 @@ public class MemberService {
 		return member;
 	}
 	
+	public List<Member> findByKeyword(String keyword) {
+		
+		// 1) Connection 만들기 => 기본 생성자에서 했음!
+		// 2) DAO 호출!
+		List<Member> members = new MemberDao().findByKeyword(conn, keyword);
+		// 3) Connection 반납
+		close(conn);
+		// 4) 결과 반환
+		return members;
+		
+	}
+	
+	// 의사 결정 코드
+	public int update(PasswordDTO pd) {
+		// 회원의 비밀번호를 수정해야 한다 == Member 테이블에서 한 행 UPDATE
+		// 비밀번호 수정
+		// UPDATE MEMBER SET USERPSD = ?? WHERE USERID = ?? AND USERPWD = ??
+		if(pd.getNewPassword().length() > 20) {
+			// throw new RuntimeException("너무 긴 비밀번호예요~~");	// throw 억지로 예외 발생시키는 거
+			return 0;
+		}
+
+		Member member = new MemberDao().findById(conn, pd.getUserId());
+		if(member == null) {
+			// throw new RuntimeException("존재하지 않는 아이디입니다.");
+			return 0;
+		}
+		
+		int result = new MemberDao().update(conn, pd);
+		
+		if(result > 0) {
+			commit(conn);
+		}
+		close(conn);
+		
+		return result;
+	}
+
+	
+	public int delete(Member member) {
+		// 회원의 정보를 삭제해야지 == Member 테이블에서 한행 DELETE
+		// 1) Connection 만들기
+		// 2) 매개변수로 받은거 하고 커넥션하고 DAO하고 넘겨야지
+		int result = new MemberDao().delete(conn, member);
+		
+		// 3) DML이니깐 다녀오면 트랜잭션 처리
+		if(result > 0) {
+			commit(conn);
+		}
+	
+		// 4) 트랜잭션 끝나면 Connection 할 일 없으니깐 반납해야지
+		close(conn);
+
+		// 5) 결과 반환해줘야지
+		return result;
+		
+	}
 	
 	
 	
