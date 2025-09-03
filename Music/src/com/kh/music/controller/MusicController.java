@@ -7,18 +7,23 @@ import com.kh.music.vo.MusicVo;
 
 public class MusicController {
 
-	private MusicDao mDao = new MusicDao();
+private MusicDao mDao = new MusicDao();
 	
-	public int musicInsert(String title, String artists, String genre) {
+	public int musicInsert(String title, String artists, String genre, String releaseDate,
+							String songwriter, String lyricist) {
 		
 		MusicVo mv = new MusicVo();
 		mv.setTitle(title);
 		mv.setArtists(artists);
 		mv.setGenre(genre);
+		mv.setReleaseDate(releaseDate);
+		mv.setSongwriter(songwriter);
+		mv.setLyricist(lyricist);
 		int result = new MusicDao().musicInsert(mv);
 		
 		return result;
 	}
+	
 	
 
 	public List<MusicVo> titleSearch(String title){

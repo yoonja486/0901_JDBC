@@ -46,11 +46,17 @@ public class MusicView {
 		String artists = sc.nextLine();
 		System.out.println("장르를 적어주세요 > ");
 		String genre = sc.nextLine();
+		System.out.println("발매일자를 적어주세요 > ");
+		String releaseDate = sc.nextLine();
+		System.out.println("작곡가를 적어주세요 > ");
+		String songwriter = sc.nextLine();
+		System.out.println("작사가를 적어주세요 > ");
+		String lyricist = sc.nextLine();
 		System.out.println(title + " / " + artists + " / " + genre + " 뮤직이 추가 되었습니다.");
-		
-		mc.musicInsert(title, artists, genre);
+		mc.musicInsert(title, artists, genre, releaseDate, songwriter, lyricist);
 		
 	}
+	
 	
 	private void titleSearch() {
 		
