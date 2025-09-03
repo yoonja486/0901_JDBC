@@ -17,16 +17,8 @@ public class MusicDao {
 	private final String PASSWORD = "HGJ201234";
 	Connection conn = null;
 	
-	public MusicDao() {
 		
-		try {
-			Class.forName(DRIVER);
-			conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-		} catch(Exception e ) {
-			System.out.println( e.toString());
-		}
-		
-	}
+	
 
 	public int musicInsert(MusicVo musicVo) {
 		// Connection conn = null;
@@ -141,5 +133,5 @@ public List<MusicVo> titleSearch(String title){
 		return mvos;
 	}
 	
-
 }
+
