@@ -94,10 +94,74 @@ public class BoardDAO {
 		}
 		
 		return boards;
+	}	
+	
+	
+	public Board selectBoard(Connection conn, int boardNo) {
 		
+		Board board = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
 		
+		String sql = """
+				         SELECT
+				                BOARD_NO
+				              , BOARD_TITLE
+				              , BOARD_CONTENT
+				              , USERID
+				              , CREATE_DATE
+				              , DELETE_YN
+				           FROM
+				                BOARD
+				           JOIN
+				                MEMBER ON (USERNO = BOARD_WRITER)
+				          WHERE
+				                DELETE_YN = 'N'
+				            AND
+				                BOARD_NO = ?
+				""";
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, boardNo);
+			rset = pstmt.executeQuery();
+			
+			if(rset.next()) {
+				board = new Board(rset.getInt("BOARD_NO"), rset.getString("BOARD_TITLE"), rset.getString("BOARD_CONTENT")
+								,rset.getString("USERID"), rset.getDate("CREATE_DATE"), rset.getString("DELETE_YN"));
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JDBCTemplate.close(rset);
+			JDBCTemplate.close(pstmt);
+		}
+		
+		return board;
 	}
 	
 	
+	public int deleteBoard(Connection conn, int boardNo) {
+		
+		try(PreparedStatement pstmt = conn.prepareStatement("""
+															UPDATE
+															       BOARD
+															   SET
+															       DELETE_YN = 'Y'
+															 WHERE
+															       BOARD_NO = ?
+														""")) {
+			pstmt.setInt(1, boardNo);
+			return pstmt.executeUpdate();
+	} catch(SQLException e) {
+		e.printStackTrace();
+	}
+	return 0;
 	
+	
+	
+	
+	
+	}	
 }

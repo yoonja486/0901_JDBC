@@ -58,7 +58,33 @@ public class BoardService {
 		
 		return boards;
 	}
+	
+	
+	public Board selectBoard(int boardNo) {
+		
+		Board board = null;
+		
+		if(boardNo > 0) {
+			board = new BoardDAO().selectBoard(conn, boardNo);
+		}
+		JDBCTemplate.close(conn);
+		
+		return board;
+	}
 
+	
+	public int deleteBoard(int boardNo) {
+		
+		int result = new BoardDAO().deleteBoard(conn, boardNo);
+		
+		if(result > 0) {
+			JDBCTemplate.commit(conn);
+		}
+		
+		JDBCTemplate.close(conn);
+		
+		return result;
+	}
 	
 
 }

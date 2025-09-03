@@ -40,7 +40,7 @@ public class MusicDao {
 			            TB_MUSIC(MUSIC_ID, TITLE, ARTISTS, GENRE, RELEASE_DATE, SONGWRITER, LYRICIST)
 			     VALUES
 			            (
-			            SEQ_USERNO.NEXTVAL
+			            (SELECT count(*) + 1 FROM TB_MUSIC)
 			          , ?
 			          , ?
 			          , ? 

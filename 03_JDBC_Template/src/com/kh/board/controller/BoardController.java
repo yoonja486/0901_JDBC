@@ -20,4 +20,21 @@ public class BoardController {
 		return boards;
 		
 	}
+	
+	
+	public Board selectBoard(int boardNo) {
+		return new BoardService().selectBoard(boardNo);
+		
+	}
+	
+	
+	public int deleteBoard(int boardNo) {
+		return new BoardService().deleteBoard(boardNo);
+		
+	}
+	
+	
+	
+	
+	
 }
