@@ -9,10 +9,23 @@
 	
 	<entry key="findAll">
 	
-	
-	
-	
 	</entry>
 
+	<entry key="deptSearch">
+		SELECT	
+		       EMP_NAME
+			 , DEPT_TITLE
+		  FROM
+		       EMPLOYEE E
+		     , DEPARTMENT D
+		     , JOB J
+		 WHERE
+		       E.DEPT_CODE = D.DEPT_ID    
+		   AND
+		       E.JOB_CODE = J.JOB_CODE 
+		   AND 
+			   D.DEPT_TITLE = ?
+	
+	</entry>
 
 </properties>
