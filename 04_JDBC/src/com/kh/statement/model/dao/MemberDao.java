@@ -226,13 +226,6 @@ public class MemberDao {
 		// 8)
 		return result;
 		
-		
 	}
-	
-	
-	
-	
-	
-	
 	
 }
