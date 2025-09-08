@@ -13,7 +13,11 @@ public class Board {
 	private String daleteStatus; // DELETE_STATUS CHAR(1)
 	
 	
-	
+	public Board() {
+		super();
+	}
+
+
 	// 모든 필드에 대한 매개변수 생성자
 	public Board(int boardNo, String boardTitle, String boardContent, String boardWriter, Date createDate,
 			String daleteStatus) {
