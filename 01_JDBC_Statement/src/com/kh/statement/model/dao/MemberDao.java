@@ -35,6 +35,7 @@ public class MemberDao {
 	 * 
 	 * ◆ JDBC 처리 순서(절차는 바뀔 수 없음)★
 	 * 
+	 * 0) 필요한 변수 선언 및 null값으로 초기화
 	 * 1) JDBC Driver 등록 	 : DBMS제조사에서 제공하는 클래스를 리플렉션을 이용해 등록
 	 * 2) Connection 객체 생성 : 접속하고자 하는 DB정보를 전달하면서 Connection 객체 반환
 	 * 3) Statement 객체 생성  : Connection 객체를 이용해서 생성

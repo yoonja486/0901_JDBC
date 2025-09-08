@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties> 
+
+	<comment>EMPLOYEE SQL</comment>
+
+	<entry key="A">
+			B </entry>
+	
+	<entry key="findAll">
+		SELECT 
+			   E.EMP_ID
+			 , E.EMP_NAME
+			 , E.SALARY 
+			 , D.DEPT_TITLE 
+			 , J.JOB_NAME 
+		  FROM   
+		       EMPLOYEE E 
+		  LEFT 
+		  JOIN 
+		       DEPARTMENT D ON E.DEPT_CODE = D.DEPT_ID
+		  LEFT 
+		  JOIN 
+		       JOB J ON J.JOB_CODE = E.JOB_CODE
+		 ORDER
+		    BY
+		       E.EMP_ID ASC
+	</entry>
+
+	<entry key="deptSearch">
+		SELECT	
+		       EMP_NAME
+			 , DEPT_TITLE
+		  FROM
+		       EMPLOYEE E
+		     , DEPARTMENT D
+		     , JOB J
+		 WHERE
+		       E.DEPT_CODE = D.DEPT_ID    
+		   AND
+		       E.JOB_CODE = J.JOB_CODE 
+		   AND 
+			   D.DEPT_TITLE LIKE '%'||?||'%'
+	</entry>
+	
+	<entry key="jobSearch">
+		SELECT	
+		       EMP_NAME
+		     , JOB_NAME
+		  FROM
+		       EMPLOYEE E
+		  LEFT
+		  JOIN
+		       JOB J USING(JOB_CODE)
+		  LEFT
+		  JOIN
+		       DEPARTMENT D ON(E.DEPT_CODE = D.DEPT_ID)
+		 WHERE
+		       JOB_NAME = ?
+	</entry>
+	
+	<entry key="empIdDtl">
+		SELECT
+		       *
+		  FROM
+		       EMPLOYEE
+		 WHERE
+		       EMP_ID = ?
+	</entry>
+	
+	<entry key="maxSalary">
+		<![CDATA[SELECT
+			   ROWNUM
+			 , A.*
+		  FROM 
+			   (        
+	    		SELECT
+	                   EMP_ID
+				     , EMP_NAME
+				     , EMP_NO
+	      	         , JOB_CODE
+				 	 , nvl(SALARY,0) AS SALARY
+		          FROM 
+			           EMPLOYEE 
+			     WHERE SALARY > 0
+			     ORDER BY 
+			              SALARY DESC
+			     ) A
+		  WHERE ROWNUM <= 5 
+		  ]]>
+	</entry>
+	
+	<entry key="minSalary">
+	<![CDATA[SELECT
+			   ROWNUM
+			 , A.*
+		  FROM 
+			   (        
+	    		SELECT
+	                   EMP_ID
+				     , EMP_NAME
+				     , EMP_NO
+	      	         , JOB_CODE
+				 	 , nvl(SALARY,0) AS SALARY
+		          FROM 
+			           EMPLOYEE 
+			     WHERE SALARY > 0
+			     ORDER BY 
+			              SALARY ASC
+			     ) A
+		  WHERE ROWNUM <= 5 
+		  ]]>
+	</entry>
+	
+	<entry key="insertEmp">
+	<![CDATA[INSERT
+  		 	   INTO
+       		   EMPLOYEE(
+				           EMP_ID
+						 , EMP_NAME
+						 , EMP_NO
+						 , JOB_CODE
+						 , SAL_LEVEL)		
+		 VALUES ((SELECT COUNT(*) + 200 FROM EMPLOYEE)
+				 , ?
+				 , ?
+				 , ?
+				 , ?)
+				 ]]>	 
+	</entry>
+	
+	<entry key='updateEmp'>
+	<![CDATA[UPDATE
+       		        EMPLOYEE
+   			    SET 
+	                SALARY = ?
+			      , JOB_CODE = ?
+			      , DEPT_CODE = ?
+			  WHERE
+			        EMP_ID = ?
+				]]>
+	</entry>
+	
+	<entry key='quitEmp'>
+	<![CDATA[UPDATE
+			       EMPLOYEE
+			   SET 
+			       ENT_YN = ?
+			     , ENT_DATE = TO_DATE(?, 'yyyymmdd')
+			 WHERE
+			       EMP_ID = ?
+				]]>
+	</entry>
+
+</properties>
